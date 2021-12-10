@@ -1,0 +1,6 @@
+*~
+backup
+data
+*.swp
+node_modules
+note
