@@ -1,0 +1,5 @@
+test('${title}', () => {
+${declaration}
+  expect(${functionName}(${argument})).toBe();
+});
+

@@ -1,0 +1,36 @@
+{
+  "name": "jestter",
+  "version": "0.1.0",
+  "description": "Scaffold Jest Test File from stub.",
+  "main": "bin/jestter/index.js",
+  "bin": {
+	"jestter": "bin/jestter/index.js"
+  },
+  "type": "module",
+  "directories": {
+    "bin": "./bin",
+    "lib": "./lib"
+  },
+  "auther": "akira80d",
+  "license": "MIT",
+  "keywords": [
+    "jest",
+    "test",
+    "stub"
+  ],
+  "devDependencies": {
+    "@babel/cli": "^7.16.0",
+    "@babel/core": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
+    "babel-preset-es2015": "^6.24.1",
+    "prettier": "2.5.1",
+    "watch": "^1.0.2"
+  },
+  "scripts": {
+    "watch": "npm run watch:bin & npm run watch:lib",
+    "watch:bin": "watch 'npm run babel:bin' src/bin/",
+    "watch:lib": "watch 'npm run babel:lib' src/lib/",
+    "babel:bin": "./node_modules/.bin/babel src/bin/ --out-dir bin/",
+    "babel:lib": "./node_modules/.bin/babel src/lib/ --out-dir lib/"
+  }
+}

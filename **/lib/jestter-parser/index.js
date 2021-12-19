@@ -4,43 +4,46 @@ let datas = null;
 let idlist = [];
 let nextNum = 0;
 let nodeProcessLog = [];
-
-function writeJest() {
+export function writeJest() {
   if (process.argv.length == 2) {
-    console.log("select jsfile in argument");
+    console.log("select javaScript in argument");
     console.log(" $ node writeJest.js ./test.js");
     return;
   }
 
   const filepath = process.argv[2];
-  const rootNodeId = getRootNodeIdFromJsfile(filepath);
+  const rootNodeId = getRootNodeIdFromJsfile(filepath); // make sentence Node
 
-  // make sentence Node
-  let termination = [{ begin: ["", 0], end: ["\n", 1], kind: "RETURN" }];
+  let termination = [{
+    begin: ["", 0],
+    end: ["\n", 1],
+    kind: "RETURN"
+  }];
   const kind = "SENTENCE";
   const nodeProcessNum = 1;
   const bool = makeNodeProcess(rootNodeId, termination, kind, nodeProcessNum);
-
   debugNode();
 }
 
 function getRootNodeIdFromJsfile(filepath) {
   let data = fs.readFileSync(filepath, "utf-8");
-  datas = data.split("");
+  datas = data.split(""); // make root Node
 
-  // make root Node
   let rootNodeId = makeRootNode(0, data.length - 1);
-
   return rootNodeId;
 }
 
 function makeNodeProcess(objId, termination, kind, num) {
   mylog(9999, " makeNodeProcess start------", {
     objId: idlist[objId],
-    nodeProcessNum: num,
+    nodeProcessNum: num
   });
   let firstPoint = idlist[objId].firstPoint;
-  let termination2 = [{ begin: ["", 0], end: [" ", 1], kind: "SPACE" }];
+  let termination2 = [{
+    begin: ["", 0],
+    end: [" ", 1],
+    kind: "SPACE"
+  }];
 
   while (firstPoint < idlist[objId].lastPoint) {
     processPoint = makeNodes({
@@ -49,51 +52,52 @@ function makeNodeProcess(objId, termination, kind, num) {
       lastPoint: idlist[objId].lastPoint,
       level: idlist[objId].level,
       termination: termination,
-      kind: kind,
+      kind: kind
     });
-
     firstPoint = processPoint + 1;
   }
 
   idOrFalse = seekSentence();
+
   if (idOrFalse == false) {
-    return true
+    return true;
   } else {
     makeNodeProcess(idOrFalse, termination2, "", num + 1);
   }
 }
-
 /*
  * return id is needed to make node
  * or false
  */
+
+
 function seekSentence() {
   for (let i = 0; i < idlist.length; i++) {
     let node = idlist[i];
+
     if (node.kind == "SENTENCE" && node.children.length == 0) {
       //firstPoint lastPoint is not undefined
-      let firstPoint = node.firstPoint
-        ? node.firstPoint
-        : idlist[node.parentId].firstPoint + 1;
-      let lastPoint = node.lastPoint
-        ? node.lastPoint
-        : idlist[node.parentId].lastPoint - 1;
+      let firstPoint = node.firstPoint ? node.firstPoint : idlist[node.parentId].firstPoint + 1;
+      let lastPoint = node.lastPoint ? node.lastPoint : idlist[node.parentId].lastPoint - 1;
 
       if (firstPoint < lastPoint) {
         if (node.firstPoint == undefined) {
           const functionname = "seekSentence";
           editFirstPoint(i, firstPoint, functionname);
         }
+
         if (node.lastPoint == undefined) {
           const functionname = "seekSentence";
           editLastPoint(i, lastPoint, functionname);
         }
+
         return node.id;
       } else {
         makeTerminationNode(i, node);
       }
     }
   }
+
   return false;
 }
 
@@ -102,7 +106,7 @@ function makeTerminationNode(i, node) {
   const tNodeId = makeNode({
     parentId: node.id,
     kind: nodeKind.TERMINATION,
-    level: node.level + 1,
+    level: node.level + 1
   });
 }
 
@@ -120,56 +124,68 @@ function makeNodes(props) {
     if (firstPoint == i && /\s/.test(datas[i])) {
       firstPoint += 1;
       continue;
-    }
+    } // make node in firstPoint
 
-    // make node in firstPoint
+
     if (i == firstPoint) {
       nodeId = makeNodeInFirstPoint(i, kind, level, firstPoint, parentId);
-    }
+    } // termination begin point process
 
-    // termination begin point process
+
     if (hasBeginTermination(i, termination, idlist[nodeId].level)) {
       termination.push(getTermination(i));
-      mylog(i, "T-push:", { term: termination.slice(-1)[0].end[0] });
+      mylog(i, "T-push:", {
+        term: termination.slice(-1)[0].end[0]
+      }); // store before process nodeId
 
-      // store before process nodeId
       if (idlist[nodeId].contents != "") {
         if (isStoreNode(i, nodeId, termination)) {
           if (idlist[nodeId].lastPoint == undefined) {
             const functionname = "makeNodes_beginPoint";
             editLastPoint(nodeId, i - 1, functionname);
-            mylog(i, functionname, { lastPoint: idlist[nodeId].lastPoint });
+            mylog(i, functionname, {
+              lastPoint: idlist[nodeId].lastPoint
+            });
           }
+
           storeNodeProcess(nodeId, "hasBeginTerm");
           return i;
         }
       }
-
       /*
        * TODO is there the problem? when kind of node is brackets
        *  /n {a;"a",b;"b" }("aaaa")
        */
+
+
       idlist[nodeId].contents += datas[i];
       idlist[nodeId].memo += "T-push:" + idlist[nodeId].kind;
       continue;
-    }
+    } // termination end point process
 
-    // termination end point process
+
     if (hasEndTermination(i, termination)) {
       const nodeIdfalse = terminationEndPointProcess(i, nodeId, termination);
 
       if (termination.length > 1) {
-        mylog(i, "T-pop:", { term: termination.slice(-1)[0].end[0] });
+        mylog(i, "T-pop:", {
+          term: termination.slice(-1)[0].end[0]
+        });
+
         if (termination.length > 2) {
-          mylog(i, "T-pop222222:", { term: termination.slice(-1)[0].end[0] });
+          mylog(i, "T-pop222222:", {
+            term: termination.slice(-1)[0].end[0]
+          });
         }
+
         termination = popTermination(i, termination, lastPoint);
       }
-
       /*
        * same termination process
        * termination.length > 1 continue
        */
+
+
       if (termination.length > 1) {
         continue;
       } else if (nodeIdfalse == false) {
@@ -178,13 +194,10 @@ function makeNodes(props) {
         nodeId = nodeIdfalse;
         return i;
       }
-    }
+    } // strip space when contents is empty
 
-    // strip space when contents is empty
-    if (
-      (datas[i] != "\n" || termination.length > 1) &&
-      !(idlist[nodeId].contents == "" && datas[i].match(/\s/))
-    ) {
+
+    if ((datas[i] != "\n" || termination.length > 1) && !(idlist[nodeId].contents == "" && datas[i].match(/\s/))) {
       idlist[nodeId].contents += datas[i];
     }
   }
@@ -207,10 +220,11 @@ function isStoreNode(i, nodeId, termination) {
     contents: node.contents,
     beginTerm: datas[i],
   });*/
-  
-  if (isBackets(node.kind)){
-	return false
+
+  if (isBackets(node.kind)) {
+    return false;
   }
+
   return !(node.kind == "SENTENCE" && termination.length > 1);
 }
 
@@ -222,6 +236,7 @@ function storeNodeProcess(nodeId, prefunction) {
 function makeNodeInFirstPoint(i, propsKind, level, firstPoint, parentId) {
   // search kind over level2
   let kind;
+
   if (level == 1) {
     kind = propsKind;
   } else {
@@ -237,19 +252,23 @@ function makeNodeInFirstPoint(i, propsKind, level, firstPoint, parentId) {
       contents: "",
       kind: kind,
       level: level + 1,
-      firstPoint: firstPoint,
+      firstPoint: firstPoint
     });
   }
+
   idlist[nodeId].memo = kind;
-  mylog(i, "makeNodeInFirstPoint", { kind: kind });
+  mylog(i, "makeNodeInFirstPoint", {
+    kind: kind
+  });
   return nodeId;
 }
-
 /*
  * termination end point process
  * return Node or false
  * false: not return Node when level <= 2 and termination.length > 1
  */
+
+
 function terminationEndPointProcess(i, nodeId, termination) {
   // \n space delete
   if (!(datas[i] == "\n" || /\s/.test(datas[i]))) {
@@ -259,9 +278,9 @@ function terminationEndPointProcess(i, nodeId, termination) {
 
   if (!(termination.length == 1 || idlist[nodeId].level > 2)) {
     return false;
-  }
+  } // input end propertiee
 
-  // input end propertiee
+
   if (isBackets(idlist[nodeId].kind)) {
     idlist[nodeId].end = datas[i];
   }
@@ -272,57 +291,36 @@ function terminationEndPointProcess(i, nodeId, termination) {
     idlist[nodeId].contents += datas[i + 1];
   } else {
     const functionname = " terminationEndPointP:fP+wlength:";
-    editLastPoint(
-      nodeId,
-      idlist[nodeId].firstPoint + idlist[nodeId].contents.length - 1,
-      functionname
-    );
-
-    idlist[nodeId].memo +=
-      " f+wlength:" +
-      (idlist[nodeId].firstPoint + idlist[nodeId].contents.length - 1);
+    editLastPoint(nodeId, idlist[nodeId].firstPoint + idlist[nodeId].contents.length - 1, functionname);
+    idlist[nodeId].memo += " f+wlength:" + (idlist[nodeId].firstPoint + idlist[nodeId].contents.length - 1);
   }
+
   idlist[nodeId].memo += " kind:" + termination.slice(-1)[0].kind;
   idlist[nodeId].memo += " hasEndTermination";
-
   mylog(i, " termEndPointProcess", {
     f: idlist[nodeId].firstPoint,
     l: idlist[nodeId].lastPoint,
-    contents: idlist[nodeId].contents,
+    contents: idlist[nodeId].contents
   });
   return nodeId;
 }
 
 function isBackets(kind) {
-  return [
-    "CURLYBRACKETS",
-    "PARENTHESES",
-    //    "ANGLEBRACKETS",
-    //    "SQUAREBRACKETS",
+  return ["CURLYBRACKETS", "PARENTHESES" //    "ANGLEBRACKETS",
+  //    "SQUAREBRACKETS",
   ].includes(kind);
 }
 
 function hasEndTermination(i, termination) {
-  return (
-    (termination.slice(-1)[0].end[1] == 1 &&
-      datas[i] == termination.slice(-1)[0].end[0]) ||
-    (termination.slice(-1)[0].end[1] == 2 &&
-      datas.slice(i, i + 2).join("") == termination.slice(-1)[0].end[0])
-  );
+  return termination.slice(-1)[0].end[1] == 1 && datas[i] == termination.slice(-1)[0].end[0] || termination.slice(-1)[0].end[1] == 2 && datas.slice(i, i + 2).join("") == termination.slice(-1)[0].end[0];
 }
 
 function returnEndTerminationWordCount(i, termination) {
-  if (
-    termination.slice(-1)[0].end[1] == 1 &&
-    datas[i] == termination.slice(-1)[0].end[0]
-  ) {
+  if (termination.slice(-1)[0].end[1] == 1 && datas[i] == termination.slice(-1)[0].end[0]) {
     return [1, termination.slice(-1)[0].end[0]];
   }
 
-  if (
-    termination.slice(-1)[0].end[1] == 2 &&
-    datas.slice(i, i + 2).join("") == termination.slice(-1)[0].end[0]
-  ) {
+  if (termination.slice(-1)[0].end[1] == 2 && datas.slice(i, i + 2).join("") == termination.slice(-1)[0].end[0]) {
     return [2, termination.slice(-1)[0].end[0]];
   }
 
@@ -343,6 +341,7 @@ function hasBeginTermination(i, termination, level) {
   }
 
   const str = datas.slice(i, i + 2).join("");
+
   if (termRegExp2.test(str)) {
     if (!isIntoComment(termination) && !isIntoQuotation(termination)) {
       return true;
@@ -350,6 +349,7 @@ function hasBeginTermination(i, termination, level) {
       return false;
     }
   }
+
   return false;
 }
 
@@ -357,7 +357,9 @@ function getTermination(i) {
   if (termRegExp1.test(datas[i])) {
     return getTerminationItem(datas[i]);
   }
+
   const str = datas.slice(i, i + 2).join("");
+
   if (termRegExp2.test(str)) {
     return getTerminationItem(str);
   }
@@ -369,57 +371,74 @@ function getTerminationItem(str) {
       return termList[i];
     }
   }
+
   return false;
 }
 
 function searchKind(i) {
   const kindItem1 = getTerminationItem(datas[i]);
+
   if (kindItem1 != false) {
     return kindItem1.kind;
   }
 
   const kindItem2 = getTerminationItem(datas.slice(i, i + 2).join(""));
+
   if (kindItem2 != false) {
     return kindItem2.kind;
   }
+
   return nodeKind.OBJ;
-}
+} //{ begin: [" ", 1], end: [" ", 1], kind: "SPACE" },
 
-//{ begin: [" ", 1], end: [" ", 1], kind: "SPACE" },
-const termList = [
-  { begin: ["{", 1], end: ["}", 1], kind: "CURLYBRACKETS" },
-  { begin: ["(", 1], end: [")", 1], kind: "PARENTHESES" },
-  //  { begin: ["<", 1], end: [">", 1], kind: "ANGLEBRACKETS" },
-  //  { begin: ["[", 1], end: ["]", 1], kind: "SQUAREBRACKETS" },
-  { begin: ["/*", 2], end: ["*/", 2], kind: "ASTA_COMMENT" },
-  { begin: ["//", 2], end: ["\n", 1], kind: "SLASH_COMMENT" },
-  { begin: ["'", 1], end: ["'", 1], kind: "SQUOTATION" },
-  { begin: ['"', 1], end: ['"', 1], kind: "WQUOTATION" },
-  { begin: ["`", 1], end: ["`", 1], kind: "BQUOTATION" },
-];
 
-//const termRegExp1 = new RegExp("[{(<['\"`]");
+const termList = [{
+  begin: ["{", 1],
+  end: ["}", 1],
+  kind: "CURLYBRACKETS"
+}, {
+  begin: ["(", 1],
+  end: [")", 1],
+  kind: "PARENTHESES"
+}, //  { begin: ["<", 1], end: [">", 1], kind: "ANGLEBRACKETS" },
+//  { begin: ["[", 1], end: ["]", 1], kind: "SQUAREBRACKETS" },
+{
+  begin: ["/*", 2],
+  end: ["*/", 2],
+  kind: "ASTA_COMMENT"
+}, {
+  begin: ["//", 2],
+  end: ["\n", 1],
+  kind: "SLASH_COMMENT"
+}, {
+  begin: ["'", 1],
+  end: ["'", 1],
+  kind: "SQUOTATION"
+}, {
+  begin: ['"', 1],
+  end: ['"', 1],
+  kind: "WQUOTATION"
+}, {
+  begin: ["`", 1],
+  end: ["`", 1],
+  kind: "BQUOTATION"
+}]; //const termRegExp1 = new RegExp("[{(<['\"`]");
+
 const termRegExp1 = new RegExp("[{('\"`]");
 const termRegExp2 = /\/\/|\/\*/;
 
 function isIntoComment(termination) {
-  return (
-    termination.slice(-1)[0].end[0] == "*/" ||
-    termination.slice(-1)[0].begin[0] == "//"
-  );
+  return termination.slice(-1)[0].end[0] == "*/" || termination.slice(-1)[0].begin[0] == "//";
 }
 
 function isIntoQuotation(termination) {
-  return (
-    termination.slice(-1)[0].begin[0] == "'" ||
-    termination.slice(-1)[0].begin[0] == '"' ||
-    termination.slice(-1)[0].begin[0] == "`"
-  );
+  return termination.slice(-1)[0].begin[0] == "'" || termination.slice(-1)[0].begin[0] == '"' || termination.slice(-1)[0].begin[0] == "`";
 }
-
 /*
  * finished used Delete termination
  */
+
+
 function popTermination(i, termination, lastPoint) {
   if (termination.length > 1) {
     // termination word countr 1 or 2
@@ -435,6 +454,7 @@ function popTermination(i, termination, lastPoint) {
       }
     }
   }
+
   return termination;
 }
 
@@ -446,7 +466,7 @@ function makeRootNode(firstPoint, lastPoint) {
     kind: nodeKind.ROOT,
     level: level,
     firstPoint: firstPoint,
-    lastPoint: lastPoint,
+    lastPoint: lastPoint
   });
 }
 
@@ -458,13 +478,13 @@ function makeBracketsNode(firstPoint, level, kind, begin, parentId) {
     level: level,
     firstPoint: firstPoint,
     begin: begin,
-    end: "",
+    end: ""
   });
   let sentenceNodeId = makeNode({
     parentId: nodeId,
     contents: "",
     kind: nodeKind.SENTENCE,
-    level: level + 1,
+    level: level + 1
   });
   return nodeId;
 }
@@ -480,6 +500,7 @@ function editLastPoint(id, lastPoint, functionname) {
   } else {
     idlist[id].lastPoint = lastPoint;
   }
+
   idlist[id].memo += " editLastPoint:" + functionname;
 }
 
@@ -501,18 +522,17 @@ function makeNode(props) {
     contents: props.contents,
     firstPoint: props.firstPoint,
     lastPoint: props.lastPoint,
-    begin: props.begin, // {(<[
-    end: props.end, // })>]
+    begin: props.begin,
+    // {(<[
+    end: props.end,
+    // })>]
     children: [],
     level: props.level,
-    memo: [],
+    memo: []
   };
-
   const nodeId = node.id;
+  idlist[nodeId] = node; // save node id in prent.children
 
-  idlist[nodeId] = node;
-
-  // save node id in prent.children
   if (props.parentId > 0) {
     idlist[props.parentId].children.push(nodeId);
   }
@@ -532,7 +552,7 @@ const nodeKind = {
   SQUOTATION: "SQUOTATION",
   //  ANGLEBRACKETS: "ANGLEBRACKETS",
   //  SQUAREBRACKETS: "SQUAREBRACKETS",
-  TERMINATION: "TERMINATION",
+  TERMINATION: "TERMINATION"
 };
 
 function mylog(i, name, props) {
@@ -541,46 +561,34 @@ function mylog(i, name, props) {
 
 function debugNode() {
   for (let i = 0; i <= idlist.length; i++) {
-    console.log(9999, " analyzeNode2", { num: i, idlist: idlist[i] });
-  }
+    console.log(9999, " analyzeNode2", {
+      num: i,
+      idlist: idlist[i]
+    });
+  } //console.log(nodeProcessLog);
 
-  //console.log(nodeProcessLog);
-  nodeProcessLog.forEach((p) => {
-    if (/^4\d+/.test(p[0])) {
-      //      console.log(p);
+
+  nodeProcessLog.forEach(p => {
+    if (/^4\d+/.test(p[0])) {//      console.log(p);
     }
-  });
+  }); // contents.length == (lastPoint - firstPoint)
 
-  // contents.length == (lastPoint - firstPoint)
   let contents = null;
   let strnum = null;
   let flLength = null;
+
   for (let l = 0; l < idlist.length; l++) {
     if (idlist[l].contents != undefined) {
       contents = idlist[l].contents;
+
       if (contents.length == 0) {
         continue;
       }
+
       flLength = idlist[l].lastPoint - idlist[l].firstPoint + 1;
+
       if (contents.length != flLength) {
-        console.log(
-          "diff ID:" +
-            l +
-            " '" +
-            contents +
-            "' '" +
-            datas
-              .slice(idlist[l].firstPoint, idlist[l].lastPoint + 1)
-              .join("") +
-            "' conLen:" +
-            contents.length +
-            " flLen:" +
-            flLength +
-            " f:" +
-            idlist[l].firstPoint +
-            " l:" +
-            idlist[l].lastPoint
-        );
+        console.log("diff ID:" + l + " '" + contents + "' '" + datas.slice(idlist[l].firstPoint, idlist[l].lastPoint + 1).join("") + "' conLen:" + contents.length + " flLen:" + flLength + " f:" + idlist[l].firstPoint + " l:" + idlist[l].lastPoint);
       }
     }
   }
