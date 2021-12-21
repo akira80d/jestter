@@ -1,7 +1,0 @@
-test('${title}', () => {
-  //toBe, toEqurl, toBeTruthy
-  //toHaveAttribute, toHaveClass, toHaveTextContent
-  //fireEvent.click
-  expect(${functionName}());
-});
-

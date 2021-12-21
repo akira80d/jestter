@@ -1,11 +1,9 @@
-#!/usr/bin/env node
+"use strict";
 
-'use strict';
+import writer from "../jestter-writer/index.js";
+import generate from "../jestter-generate/index.js";
 
-import writer from '../jestter-writer/index.js';
-import generate from '../jestter-generate/index.js';
-
-export default function run(){
+export default function run() {
   if (process.argv.length == 2) {
     console.log(" you need to select javaScriptFile in argument");
     console.log(" $ node jestter.js ./test.js");

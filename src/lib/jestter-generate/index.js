@@ -223,7 +223,7 @@ function exportDefaultDeclarationProcess(node) {
     };
   } else {
     //TODO class
-    throw new Error("exportDefaultDeclaration:error",node);
+    throw new Error("exportDefaultDeclaration:error", node);
   }
   return object;
 }
