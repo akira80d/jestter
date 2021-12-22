@@ -28,6 +28,8 @@
     "watch": "^0.13.0"
   },
   "scripts": {
+    "build": "npm run babel:bin & npm run babel:lib",
+    "prepublishOnly": "npm run build",
     "jestter": "node ./bin/jestter/index.js",
     "watch": "npm run watch:bin & npm run watch:lib",
     "watch:bin": "watch 'npm run babel:bin' src/bin/",
