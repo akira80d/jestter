@@ -24,7 +24,7 @@ export default function myfunc(a,b,c){
 }
 ```
 
-./__TEST__/myfile.test.js
+./\_\_TEST\_\_/myfile.test.js
 ```bash
  import myfunc from '../myfile.js';
  
