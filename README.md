@@ -18,6 +18,7 @@ npx jestter ./myfile.js
 Jestter create a file.
   ./\_\_TEST\_\_/myfile.test.js
 
+# example
 myfile.js
 ```bash
 export default function myfunc(a,b,c){
@@ -36,4 +37,13 @@ export default function myfunc(a,b,c){
     
     expect(myfunc(a,b,c)).toBe();
  });
+```
+
+# React
+./jestter.json
+```bash
+{
+  "kind": "REACT",
+  "testdir": "__TEST__"
+}
 ```
