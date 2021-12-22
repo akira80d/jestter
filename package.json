@@ -1,7 +1,7 @@
 {
   "name": "jestter",
   "version": "0.1.1",
-  "description": "STUB FIRST. Scaffold Jest Test File from javaScript stub.",
+  "description": "STUB FIRST. Jestter scaffold Jest Test File from your stub.",
   "main": "bin/jestter/index.js",
   "bin": {
     "jestter": "bin/jestter/index.js"
@@ -11,9 +11,14 @@
     "bin": "./bin",
     "lib": "./lib"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akira80d/jestter.git"
+  },
   "auther": "akira80d",
   "license": "MIT",
   "keywords": [
+    "javaScript",
     "jest",
     "test",
     "stub"
@@ -34,5 +39,9 @@
     "@babel/cli": "^7.16.0",
     "@babel/core": "^7.16.5",
     "@babel/preset-env": "^7.16.5"
-  }
+  },
+  "bugs": {
+      "url": "https://github.com/akira80d/jestter/issues"
+  },
+  "homepage": "https://github.com/akira80d/jestter#readme"
 }
