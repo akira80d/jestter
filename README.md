@@ -15,7 +15,7 @@ yarn add --dev jestter
 ```bash
 npx jestter ./myfile.js
 ```
-./__TEST__/myfile.test.js
+  ./\_\_TEST\_\_/myfile.test.js
 
 myfile.js
 ```bash
