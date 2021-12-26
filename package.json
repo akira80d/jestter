@@ -1,6 +1,6 @@
 {
   "name": "jestter",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "STUB FIRST. Jestter scaffold Jest Test File from your stub.",
   "main": "bin/jestter/index.js",
   "bin": {
@@ -24,6 +24,7 @@
     "stub"
   ],
   "devDependencies": {
+    "jest": "^27.4.5",
     "prettier": "2.5.1",
     "watch": "^0.13.0"
   },
@@ -35,7 +36,8 @@
     "watch:bin": "watch 'npm run babel:bin' src/bin/",
     "watch:lib": "watch 'npm run babel:lib' src/lib/",
     "babel:bin": "./node_modules/.bin/babel src/bin/ --out-dir bin/",
-    "babel:lib": "./node_modules/.bin/babel src/lib/ --out-dir lib/"
+    "babel:lib": "./node_modules/.bin/babel src/lib/ --out-dir lib/",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "dependencies": {
     "@babel/cli": "^7.16.0",
@@ -43,7 +45,7 @@
     "@babel/preset-env": "^7.16.5"
   },
   "bugs": {
-      "url": "https://github.com/akira80d/jestter/issues"
+    "url": "https://github.com/akira80d/jestter/issues"
   },
   "homepage": "https://github.com/akira80d/jestter#readme"
 }
