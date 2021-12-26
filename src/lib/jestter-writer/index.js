@@ -84,6 +84,9 @@ const createTest = (tests) => {
       });
       data = replaceTo(data, declaration, "declaration");
       data = replaceTo(data, params.join(","), "argument");
+    }else{
+      data = replaceTo(data, "", "declaration");
+      data = replaceTo(data, "", "argument");
     }
     datas.push(data);
   });
