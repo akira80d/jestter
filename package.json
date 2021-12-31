@@ -7,6 +7,11 @@
     "jestter": "bin/jestter/index.js"
   },
   "type": "module",
+  "files": [
+    "bin",
+    "lib",
+    "data"
+  ],
   "directories": {
     "bin": "./bin",
     "lib": "./lib"
@@ -36,8 +41,8 @@
     "watch": "npm run watch:bin & npm run watch:lib",
     "watch:bin": "watch 'npm run babel:bin' src/bin/",
     "watch:lib": "watch 'npm run babel:lib' src/lib/",
-    "babel:bin": "./node_modules/.bin/babel src/bin/ --out-dir bin/",
-    "babel:lib": "./node_modules/.bin/babel src/lib/ --out-dir lib/",
+    "babel:bin": "cp -r -u -p src/bin/.* bin/",
+    "babel:lib": "cp -r -u -p src/lib/.* lib/",
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "dependencies": {

@@ -39,8 +39,7 @@ export default function generate(filepath) {
   nodesProcess(ast.program.body, ancestors);
 
   let testdata = makeTestData(filepath);
-  debuglog("------");
-  debuglog("testdata");
+  debuglog("testdata----");
   debuglog(testdata);
   return testdata;
 }
