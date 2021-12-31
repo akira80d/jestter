@@ -41,8 +41,8 @@
     "watch": "npm run watch:bin & npm run watch:lib",
     "watch:bin": "watch 'npm run babel:bin' src/bin/",
     "watch:lib": "watch 'npm run babel:lib' src/lib/",
-    "babel:bin": "cp -r -u -p src/bin/.* bin/",
-    "babel:lib": "cp -r -u -p src/lib/.* lib/",
+    "babel:bin": "cp -r -u -p src/bin/* ./bin",
+    "babel:lib": "cp -r -u -p src/lib/* ./lib",
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "dependencies": {
