@@ -31,9 +31,9 @@ export default function myfunc(a,b,c){
  import myfunc from '../myfile.js';
  
  test('myfunc Test ....'), (a,b,c) => {
-    const a == undefiend;
-    const b == undefiend;
-    const c == undefiend;
+    const a = undefiend;
+    const b = undefiend;
+    const c = undefiend;
     
     expect(myfunc(a,b,c)).toBe();
  });
