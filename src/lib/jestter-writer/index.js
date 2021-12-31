@@ -21,7 +21,7 @@ export default function writer(testdata) {
   setupArticles();
   const data = makeSentence(testdata);
   const testpath = getTestFilePath(testdata.filepath);
-  const message = makeFile(testpath, data);
+  const message = createFile(testpath, data);
   console.log(message);
 }
 
@@ -42,7 +42,7 @@ const getTestFilePath = (filepath) => {
   return testfilePath;
 };
 
-const makeFile = (testpath, data) => {
+const createFile = (testpath, data) => {
   try {
     fs.writeFileSync(testpath, data);
     return `create '${testpath}'`;
@@ -53,52 +53,90 @@ const makeFile = (testpath, data) => {
 
 const makeSentence = ({ filepath, importset, tests }) => {
   const prepared = getArticle("prepared");
-  const importdata = createImport(importset);
-  const testdata = createTest(tests);
+  const importdata = createImport(importset, searchLocalinTests(tests));
+  const testdata = createTest(tests, filepath);
   const data = [prepared, importdata, , testdata].join("\n");
   return data;
 };
 
-const createTest = (tests) => {
+/*
+ * contain Local function
+ * return Boolean
+ */
+const searchLocalinTests = (tests) => {
+  for (let i = 0; i < tests.length; i++) {
+    let test = tests[i];
+    if (test.range == "local") {
+      return true;
+      break;
+    }
+  }
+  return false;
+};
+
+const createTest = (tests, filepath) => {
   let datas = [];
-  tests.forEach(({ title, name, kind, params }) => {
-    debuglog("create test '" + title + "'");
+  tests.forEach(({ title, name, kind, params, range }) => {
+    debuglog("create test '" + range + " " + title + "'");
     let data = "";
-    //TODO kind is not used
-    // kind need REACT/JS (Function/default)
-    /*
-    switch (kind) {
-      case "Function":
-        data += replaceTo(getArticle("Function"), title, "title");
-        break;
-      default:
-        data += replaceTo(getArticle("default"), title, "title");
-        break;
-    }*/
-    data += replaceTo(getArticle("test"), title, "title");
+
+    // set title, function
+    data += replaceTo(getArticle("test"), range + " " + title, "title");
     data = replaceTo(data, name, "functionName");
+
+    // variable declaration
     if (params) {
       let declaration = "";
       params.forEach((p) => {
         declaration += "  const " + p + " = undefined;\n";
       });
+      declaration += "  const result = undefined;";
       data = replaceTo(data, declaration, "declaration");
       data = replaceTo(data, params.join(","), "argument");
-    }else{
-      data = replaceTo(data, "", "declaration");
+    } else {
+      let declaration = "  const result = undefined;";
+      data = replaceTo(data, declaration, "declaration");
       data = replaceTo(data, "", "argument");
     }
+
+    // local rewireapi
+    if (range != "local") {
+      data = replaceTo(data, "", "rewireapi");
+    } else {
+      const rewire =
+        "const " +
+        name +
+        " = " +
+        getBasename(filepath) +
+        "RewireAPI.__get__('" +
+        name +
+        "')";
+      data = replaceTo(data, rewire, "rewireapi");
+    }
+
     datas.push(data);
   });
   return datas.join("\n");
 };
 
-const createImport = ({ defaultname, names, filepath }) => {
+const createImport = ({ defaultname, names, filepath }, localBoolean) => {
+  debuglog(["createImport:", defaultname, names, filepath, localBoolean]);
   let data = "";
   if (defaultname || names.length > 0) {
     data += "import ";
+    //export default
     data += defaultname ? defaultname : "";
-    data += names.length > 0 ? "{" + names.join(",") + "}" : "";
+
+    //export and local
+    if (localBoolean) {
+      const basename = getBasename(filepath);
+      names.push("__RewireAPI__ as " + basename + "RewireAPI");
+    }
+    if (defaultname && names.length > 0) data += " ,";
+    if (names.length > 0) {
+      data += "{" + names.join(",") + "}";
+    }
+
     if (JESTTER.testdir) {
       data += " from '." + filepath + "';";
     } else {
@@ -108,6 +146,13 @@ const createImport = ({ defaultname, names, filepath }) => {
   debuglog("create import '" + data + "'");
   return data;
 };
+
+/*
+ * example './aaa/foo.js' -> 'foo'
+ */
+function getBasename(filepath) {
+  return path.basename(filepath, path.extname(filepath));
+}
 
 /**
  * replace arg, argstr
@@ -173,11 +218,14 @@ const testdata2 = {
       name: "testFunc1",
       kind: "Function",
       params: ["paramA", "paramB"],
+      range: "export",
     },
     {
       title: "testFunc2 title",
       name: "testFunc2",
       kind: undefined,
+      params: [],
+      range: "local",
     },
   ],
 };

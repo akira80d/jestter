@@ -24,6 +24,7 @@
     "stub"
   ],
   "devDependencies": {
+    "babel-plugin-rewire": "^1.2.0",
     "jest": "^27.4.5",
     "prettier": "2.5.1",
     "watch": "^0.13.0"

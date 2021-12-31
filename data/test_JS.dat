@@ -1,5 +1,6 @@
 test('${title}', () => {
 ${declaration}
-  expect(${functionName}(${argument})).toBe();
+  ${rewireapi}
+  expect(${functionName}(${argument})).toBe(result);
 });
 
