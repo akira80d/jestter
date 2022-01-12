@@ -2,7 +2,6 @@
 
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 
 let JESTTER = {
   kind: "JS",
@@ -10,16 +9,12 @@ let JESTTER = {
 };
 let Articles = {};
 
-const __filename = fileURLToPath(import.meta.url);
-const __programroot = path.dirname(path.normalize(__filename + "/../../"));
 
-const debug = process.argv[2] == "-d" ? true : false;
-
-export default function writer(testdata) {
-  debuglog(">jestter-writer:writer");
-  JESTTER = setupJestter();
-  setupArticles();
-  const data = makeSentence(testdata);
+export default function writer(testdata, __programroot, argv) {
+  vlog(">jestter-writer:writer", argv);
+  JESTTER = setupJestter(__programroot);
+  setupArticles(__programroot);
+  const data = makeSentence(testdata, argv);
   const testpath = getTestFilePath(testdata.filepath);
   const message = createFile(testpath, data);
   console.log(message);
@@ -51,10 +46,10 @@ const createFile = (testpath, data) => {
   }
 };
 
-const makeSentence = ({ filepath, importset, tests }) => {
+const makeSentence = ({ filepath, importset, tests }, argv) => {
   const prepared = getArticle("prepared");
-  const importdata = createImport(importset, searchLocalinTests(tests));
-  const testdata = createTest(tests, filepath);
+  const importdata = createImport(importset, searchLocalinTests(tests), argv);
+  const testdata = createTest(tests, filepath, argv);
   const data = [prepared, importdata, , testdata].join("\n");
   return data;
 };
@@ -74,10 +69,10 @@ const searchLocalinTests = (tests) => {
   return false;
 };
 
-const createTest = (tests, filepath) => {
+const createTest = (tests, filepath, argv) => {
   let datas = [];
   tests.forEach(({ title, name, kind, params, range }) => {
-    debuglog("create test '" + range + " " + title + "'");
+    vlog("create test '" + range + " " + title + "'", argv);
     let data = "";
 
     // set title, function
@@ -119,8 +114,8 @@ const createTest = (tests, filepath) => {
   return datas.join("\n");
 };
 
-const createImport = ({ defaultname, names, filepath }, localBoolean) => {
-  debuglog(["createImport:", defaultname, names, filepath, localBoolean]);
+const createImport = ({ defaultname, names, filepath }, localBoolean, argv) => {
+  vlog(["createImport:", defaultname, names, filepath, localBoolean], argv);
   let data = "";
   if (defaultname || names.length > 0) {
     data += "import ";
@@ -143,7 +138,7 @@ const createImport = ({ defaultname, names, filepath }, localBoolean) => {
       data += " from '" + filepath + "';";
     }
   }
-  debuglog("create import '" + data + "'");
+  vlog("create import '" + data + "'", argv);
   return data;
 };
 
@@ -171,7 +166,7 @@ const getArticle = (arg) => {
  * make Articles
  * file read './data/[datas].dat'
  */
-function setupArticles() {
+function setupArticles(__programroot) {
   const datas = ["prepared", "test"];
   datas.forEach((key) => {
     try {
@@ -191,7 +186,7 @@ function setupArticles() {
  * read jestter.json
  * assign to JESTTER
  */
-function setupJestter() {
+function setupJestter(__programroot) {
   let jestterJsonPath = path.join(
     path.normalize(__programroot + "/../../"),
     "jestter.json"
@@ -230,8 +225,14 @@ const testdata2 = {
   ],
 };
 
-const debuglog = (msg) => {
-  if (debug) {
+const vlog = (msg, argv) => {
+  let bool;
+  try{
+    bool = argv.V;
+  }catch{
+    return;
+  }
+  if (bool) {
     console.log(msg);
   }
 };

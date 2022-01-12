@@ -32,23 +32,27 @@
     "babel-plugin-rewire": "^1.2.0",
     "jest": "^27.4.5",
     "prettier": "2.5.1",
+    "typescript": "^4.5.4",
     "watch": "^0.13.0"
   },
   "scripts": {
-    "build": "npm run babel:bin & npm run babel:lib",
+    "build": "npm run cp:bin & npm run cp:lib",
     "prepublishOnly": "npm run build",
     "jestter": "node ./bin/jestter/index.js",
-    "watch": "npm run watch:bin & npm run watch:lib",
-    "watch:bin": "watch 'npm run babel:bin' src/bin/",
-    "watch:lib": "watch 'npm run babel:lib' src/lib/",
-    "babel:bin": "cp -r -u -p src/bin/* ./bin",
-    "babel:lib": "cp -r -u -p src/lib/* ./lib",
+    "watch": "npm run watch:bin & npm run watch:lib & npm run watch:jestter-cli",
+    "watch:bin": "watch 'npm run cp:bin' src/bin/",
+    "watch:lib": "watch 'npm run cp:lib' src/lib/",
+    "watch:jestter-cli": "watch 'npm run tsc' src/lib/jestter-cli/",
+    "cp:bin": "cp src/bin/jestter/*.js ./bin/jestter/",
+    "cp:lib": "cp src/lib/jestter-writer/*.js ./lib/jestter-writer/;cp src/lib/jestter-core/*.js ./lib/jestter-core/;cp src/lib/jestter-generate/*.js ./lib/jestter-generate/",
+    "tsc": "npx tsc",
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "dependencies": {
     "@babel/cli": "^7.16.0",
     "@babel/core": "^7.16.5",
-    "@babel/preset-env": "^7.16.5"
+    "@babel/preset-env": "^7.16.5",
+    "yargs": "^17.3.1"
   },
   "bugs": {
     "url": "https://github.com/akira80d/jestter/issues"
