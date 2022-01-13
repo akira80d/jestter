@@ -43,8 +43,8 @@
     "watch:bin": "watch 'npm run cp:bin' src/bin/",
     "watch:lib": "watch 'npm run cp:lib' src/lib/",
     "watch:jestter-cli": "watch 'npm run tsc' src/lib/jestter-cli/",
-    "cp:bin": "cp src/bin/jestter/*.js ./bin/jestter/",
-    "cp:lib": "cp src/lib/jestter-writer/*.js ./lib/jestter-writer/;cp src/lib/jestter-core/*.js ./lib/jestter-core/;cp src/lib/jestter-generate/*.js ./lib/jestter-generate/",
+    "cp:bin": "cp -au src/bin/jestter/*.js ./bin/jestter/",
+    "cp:lib": "cp -au src/lib/jestter-writer/*.js ./lib/jestter-writer/;cp -au src/lib/jestter-core/*.js ./lib/jestter-core/;cp -au src/lib/jestter-generate/*.js ./lib/jestter-generate/",
     "tsc": "npx tsc",
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
