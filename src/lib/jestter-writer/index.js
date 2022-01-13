@@ -3,28 +3,21 @@
 import fs from "fs";
 import path from "path";
 
-let JESTTER = {
-  kind: "JS",
-  testdir: "__TEST__",
-};
-let Articles = {};
-
-
 export default function writer(testdata, __programroot, argv) {
   vlog(">jestter-writer:writer", argv);
-  JESTTER = setupJestter(__programroot);
-  setupArticles(__programroot);
-  const data = makeSentence(testdata, argv);
-  const testpath = getTestFilePath(testdata.filepath);
+  const jestterConf = setupJestter(__programroot);
+  const articles = setupArticles(__programroot, jestterConf);
+  const data = makeSentence(testdata, articles, jestterConf, argv);
+  const testpath = getTestFilePath(testdata.filepath, jestterConf);
   const message = createFile(testpath, data);
   console.log(message);
 }
 
-const getTestFilePath = (filepath) => {
+const getTestFilePath = (filepath, jestterConf) => {
   const extname = path.extname(filepath);
   const basename = path.basename(filepath, extname);
   const dirname = path.dirname(filepath);
-  const testdir = path.join(dirname, JESTTER.testdir);
+  const testdir = path.join(dirname, jestterConf.testdir);
   if (!fs.existsSync(testdir)) {
     fs.mkdirSync(testdir);
   }
@@ -46,10 +39,20 @@ const createFile = (testpath, data) => {
   }
 };
 
-const makeSentence = ({ filepath, importset, tests }, argv) => {
-  const prepared = getArticle("prepared");
-  const importdata = createImport(importset, searchLocalinTests(tests), argv);
-  const testdata = createTest(tests, filepath, argv);
+const makeSentence = (
+  { filepath, importset, tests },
+  articles,
+  jestterConf,
+  argv
+) => {
+  const prepared = articles.prepared;
+  const importdata = createImport(
+    importset,
+    searchLocalinTests(tests),
+    jestterConf,
+    argv
+  );
+  const testdata = createTest(tests, filepath, articles, argv);
   const data = [prepared, importdata, , testdata].join("\n");
   return data;
 };
@@ -69,14 +72,14 @@ const searchLocalinTests = (tests) => {
   return false;
 };
 
-const createTest = (tests, filepath, argv) => {
+const createTest = (tests, filepath, articles, argv) => {
   let datas = [];
   tests.forEach(({ title, name, kind, params, range }) => {
     vlog("create test '" + range + " " + title + "'", argv);
     let data = "";
 
     // set title, function
-    data += replaceTo(getArticle("test"), range + " " + title, "title");
+    data += replaceTo(articles.test, range + " " + title, "title");
     data = replaceTo(data, name, "functionName");
 
     // variable declaration
@@ -109,12 +112,17 @@ const createTest = (tests, filepath, argv) => {
       data = replaceTo(data, rewire, "rewireapi");
     }
 
-    datas.push(data);
+    datas = datas.concat(data);
   });
   return datas.join("\n");
 };
 
-const createImport = ({ defaultname, names, filepath }, localBoolean, argv) => {
+const createImport = (
+  { defaultname, names, filepath },
+  localBoolean,
+  jestterConf,
+  argv
+) => {
   vlog(["createImport:", defaultname, names, filepath, localBoolean], argv);
   let data = "";
   if (defaultname || names.length > 0) {
@@ -132,7 +140,7 @@ const createImport = ({ defaultname, names, filepath }, localBoolean, argv) => {
       data += "{" + names.join(",") + "}";
     }
 
-    if (JESTTER.testdir) {
+    if (jestterConf.testdir) {
       data += " from '." + filepath + "';";
     } else {
       data += " from '" + filepath + "';";
@@ -158,83 +166,56 @@ const replaceTo = (str, arg, argstr) => {
   return str.replace(searchstr, arg);
 };
 
-const getArticle = (arg) => {
-  return Articles[arg];
-};
-
 /*+
  * make Articles
  * file read './data/[datas].dat'
  */
-function setupArticles(__programroot) {
+function setupArticles(__programroot, jestterConf) {
+  let articles = {};
   const datas = ["prepared", "test"];
   datas.forEach((key) => {
     try {
-      //const key2 =
-      //  key == "prepared" ? key + "_" + JESTTER.kind.toUpperCase() : key;
-      const key2 = key + "_" + JESTTER.kind.toUpperCase();
+      const key2 = key + "_" + jestterConf.kind.toUpperCase();
       const fpath = path.join(__programroot, "data", key2 + ".dat");
       const data = fs.readFileSync(fpath, "utf-8");
-      Articles[key] = data;
+      articles[key] = data;
     } catch (e) {
       console.error(e.message);
     }
   });
+  return articles;
 }
 
 /**
  * read jestter.json
- * assign to JESTTER
+ * assign to jestterConf
  */
 function setupJestter(__programroot) {
+  let jestterConf = {
+    kind: "JS",
+    testdir: "__TEST__",
+  };
   let jestterJsonPath = path.join(
     path.normalize(__programroot + "/../../"),
     "jestter.json"
   );
   if (!fs.existsSync(jestterJsonPath)) {
-    return JESTTER;
+    return jestterConf;
   }
 
   const jsonObj = JSON.parse(fs.readFileSync(jestterJsonPath, "utf-8"));
-  JESTTER = { ...JESTTER, ...jsonObj };
-  return JESTTER;
+  jestterConf = { ...jestterConf, ...jsonObj };
+  return jestterConf;
 }
-
-const testdata2 = {
-  filepath: "./test.js",
-  importset: {
-    defaultname: "App",
-    names: ["testFunc1", "testFunc2"],
-    filepath: "./test.js",
-  },
-  tests: [
-    {
-      title: "testFunc1 title",
-      name: "testFunc1",
-      kind: "Function",
-      params: ["paramA", "paramB"],
-      range: "export",
-    },
-    {
-      title: "testFunc2 title",
-      name: "testFunc2",
-      kind: undefined,
-      params: [],
-      range: "local",
-    },
-  ],
-};
 
 const vlog = (msg, argv) => {
   let bool;
-  try{
+  try {
     bool = argv.V;
-  }catch{
+  } catch {
     return;
   }
   if (bool) {
     console.log(msg);
   }
 };
-
-//writer(testdata2);
