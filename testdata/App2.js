@@ -1,7 +1,6 @@
 import React from "react";
 
 export default function App (argA, argB) {
-  const a = {a: "aaa", b:"bbb"}
   return (
     <div className="App">
       <header className="App-header">
@@ -10,18 +9,4 @@ export default function App (argA, argB) {
     </div>
   );
 }
-
-export let funcname1 = function(c,d){
-	return c + d;
-}
-
-export function funcname2(e,f){
-	return e + f;
-}
-
-export const funcname = (a,b) => {
-	return a + b;
-}
-
-export const name = "tarou";
 

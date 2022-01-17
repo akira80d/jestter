@@ -75,7 +75,7 @@ const searchLocalinTests = (tests) => {
 const createTest = (tests, filepath, articles, argv) => {
   let datas = [];
   tests.forEach(({ title, name, kind, params, range }) => {
-    vlog("create test '" + range + " " + title + "'", argv);
+    vlog(" > test '" + range + " " + title + "'", argv);
     let data = "";
 
     // set title, function
@@ -146,7 +146,7 @@ const createImport = (
       data += " from '" + filepath + "';";
     }
   }
-  vlog("create import '" + data + "'", argv);
+  vlog(" > import '" + data + "'", argv);
   return data;
 };
 
