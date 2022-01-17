@@ -4,4 +4,3 @@ test('${title}', () => {
   const obj = getByText(/Great Test/);
   expect(obj).toHaveTextContent("Great Test");
 });
-
