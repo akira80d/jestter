@@ -1,4 +1,4 @@
-{ 
+{
   "compilerOptions": {
     "target": "es6",
     "module": "esnext",
@@ -11,10 +11,11 @@
     "outDir": ""
   },
   "exclude": [
-	  "node_modules", 
-	  "**/*.test.ts", 
-	  "*.d.ts", 
-	  "./bin", 
-	  "./lib"
+	  "node_modules",
+	  "*.test.ts",
+	  "*.d.ts",
+	  "./bin",
+	  "./lib",
+    "testdata"
   ]
 }

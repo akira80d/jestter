@@ -1,5 +1,5 @@
 # Jestter
-STUB FIRST. Jestter scaffold Jest Test File from your stub.
+STUB FIRST DEVELOPMENT. Jestter scaffold Jest Test File from your stub.
 
 # Getting Started
 install Jestter using npm:
@@ -16,7 +16,7 @@ yarn add --dev jestter
 npx jestter ./myfile.js
 ```
 Jestter create a file.
-  ./\_\_TEST\_\_/myfile.test.js
+  ./\_\_tests\_\_/myfile.test.js
 
 # example
 myfile.js
@@ -26,7 +26,7 @@ export default function myfunc(a,b,c){
 }
 ```
 
-./\_\_TEST\_\_/myfile.test.js
+./\_\_tests\_\_/myfile.test.js
 ```bash
  import myfunc from '../myfile.js';
  
@@ -44,6 +44,6 @@ export default function myfunc(a,b,c){
 ```bash
 {
   "kind": "REACT",
-  "testdir": "__TEST__"
+  "testdir": "__tests__"
 }
 ```

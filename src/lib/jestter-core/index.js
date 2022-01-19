@@ -1,11 +1,12 @@
 "use strict";
 
-import path from "path";
+import * as path from "path";
 import { fileURLToPath } from "url";
 
-import writer from "../jestter-writer/index.js";
-import generate from "../jestter-generate/index.js";
+import * as writer from "../jestter-writer/index.js";
+import * as generate from "../jestter-generate/index.js";
 import args from "../jestter-cli/index.js";
+
 
 export default function run() {
   const __filename = fileURLToPath(import.meta.url);
@@ -19,8 +20,8 @@ export default function run() {
     throw new Error(`select JavaScript file (${jsList.join(",")})`);
   }
 
-  const testdata = generate(filepath, argv);
-  writer(testdata, __programroot, argv);
+  const testdata = generate.default(filepath, argv);
+  writer.default(testdata, __programroot, argv);
 }
 
 run();

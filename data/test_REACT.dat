@@ -1,6 +1,0 @@
-test('${title}', () => {
-  ${rewireapi}
-  const { getByText } = render(<${functionName} />);
-  const obj = getByText(/Great Test/);
-  expect(obj).toHaveTextContent("Great Test");
-});
