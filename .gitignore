@@ -5,4 +5,4 @@ backup
 node_modules
 note
 testdata/*.test.js
-.vscode
+.vscode/
