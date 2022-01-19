@@ -1,6 +1,6 @@
 {
   "name": "jestter",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "STUB FIRST DEVELOPMENT. Jestter scaffold Jest Test File from your stub.",
   "main": "bin/jestter/index.js",
   "bin": {
