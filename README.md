@@ -27,6 +27,7 @@ npx jestter ./src/myfunc1.js
 **JavaScript** ./src/myfunc1.js
 ```bash
 export let funcname1 = function(c,d=10){
+  const e = funcname4(c, d);
   return c + d;
 }
 
@@ -44,6 +45,7 @@ function funcname4(argE,argF){
 ```
 
 **test data** ./src/\_\_tests\_\_/myfunc1.test.js
+
 local function need 'npm install -save-dev babel-plugin-rewire'
 ```bash
 import {funcname1,funcname2,funcname3,__RewireAPI__ as myfunc1RewireAPI} from '../myfunc1.js';

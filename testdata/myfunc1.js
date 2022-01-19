@@ -1,6 +1,7 @@
 
 export let funcname1 = function(c,d=10){
-  return c + d;
+  const e = funcname4(c, d);
+  return c + d + e;
 }
 
 export function funcname2(...numbers){
