@@ -13,17 +13,18 @@ yarn add --dev jestter
 
 # Usage
 ```bash
-npx jestter ./myfile.js
+npx jestter ./src/myfunc.js
 ```
-Jestter create a file.
-  ./\_\_tests\_\_/myfile.test.js
+**Jestter create a test file.**
+
+  ./src/\_\_tests\_\_/myfunc.test.js
 
 # example function
 ```bash
 npx jestter ./src/myfunc1.js
 ```
 
-*JavaScript* ./src/myfunc1.js
+**JavaScript** ./src/myfunc1.js
 ```bash
 export let funcname1 = function(c,d=10){
   return c + d;
@@ -42,7 +43,7 @@ function funcname4(argE,argF){
 }
 ```
 
-*test data* ./src/\_\_tests\_\_/myfunc1.test.js
+**test data** ./src/\_\_tests\_\_/myfunc1.test.js
 local function need 'npm install -save-dev babel-plugin-rewire'
 ```bash
 import {funcname1,funcname2,funcname3,__RewireAPI__ as myfunc1RewireAPI} from '../myfunc1.js';
@@ -81,7 +82,7 @@ test('local funcname4 Test ....', () => {
 npx jestter ./src/myclass.js
 ```
 
-*JavaScript* ./src/myclass.js
+**JavaScript** ./src/myclass.js
 ```bash
 export default class MyClass {
     constructor(name= "bar") {
@@ -98,7 +99,7 @@ export default class MyClass {
 }
 ```
 
-*test data* ./src/\_\_tests\_\_/myclass.test.js
+**test data** ./src/\_\_tests\_\_/myclass.test.js
 ```bash
 import MyClass from '../myclass.js';
 
@@ -119,7 +120,7 @@ test('exportdefault MyClass Test ....', () => {
 ```bash
 npx jestter ./src/App.js --kind REACT
 ```
-*JavaScript* ./src/App.js
+**JavaScript** ./src/App.js
 ```bash
 import React from "react";
 
@@ -138,7 +139,7 @@ function App () {
 export default App;
 ```
 
-*test data* ./src/\_\_tests\_\_/App.test.js
+**test data** ./src/\_\_tests\_\_/App.test.js
 ```bash
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
