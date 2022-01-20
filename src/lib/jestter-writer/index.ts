@@ -2,13 +2,24 @@
 
 import fs from "fs";
 import path from "path";
+import {Test,Importset,Testdata} from "../jestter-generate/types";
 
-export default function writer(testdata, __programroot, argv) {
+type JestterConf = {
+    kind: string,
+    testdir: string
+}
+
+type Articles = {
+    prepared: string,
+    test: string
+}
+
+export default function writer(testdata: Testdata, __programroot:string, argv:any) {
   vlog(">jestter-writer:writer", argv);
   vlog([__programroot, argv], argv);
-  const jestterConf = setupJestter(__programroot, argv);
+  const jestterConf:JestterConf = setupJestter(__programroot, argv);
   vlog(["jestterConf:",jestterConf], argv)
-  const articles = setupArticles(__programroot, jestterConf);
+  const articles:Articles = setupArticles(__programroot, jestterConf);
   vlog(["articles:",articles], argv)
   const data = makeSentence(testdata, articles, jestterConf, argv);
   vlog(["data:",data], argv)
@@ -18,7 +29,7 @@ export default function writer(testdata, __programroot, argv) {
   console.log(message);
 }
 
-const getTestFilePath = (filepath, jestterConf) => {
+const getTestFilePath = (filepath: string, jestterConf: JestterConf) => {
   const extname = path.extname(filepath);
   const basename = path.basename(filepath, extname);
   const dirname = path.dirname(filepath);
@@ -35,7 +46,7 @@ const getTestFilePath = (filepath, jestterConf) => {
   return testfilePath;
 };
 
-const createFile = (testpath, data) => {
+const createFile = (testpath: string, data: string) => {
   try {
     fs.writeFileSync(testpath, data);
     return `create '${testpath}'`;
@@ -45,10 +56,10 @@ const createFile = (testpath, data) => {
 };
 
 const makeSentence = (
-  { filepath, importset, tests },
-  articles,
-  jestterConf,
-  argv
+  { filepath, importset, tests }: Testdata,
+  articles: Articles,
+  jestterConf: JestterConf,
+  argv: any
 ) => {
   const prepared = articles.prepared;
   const importdata = createImport(
@@ -66,7 +77,7 @@ const makeSentence = (
  * contain Local function
  * return Boolean
  */
-const searchLocalinTests = (tests) => {
+const searchLocalinTests = (tests:Test[]) => {
   for (let i = 0; i < tests.length; i++) {
     let test = tests[i];
     if (test.range == "local") {
@@ -77,15 +88,14 @@ const searchLocalinTests = (tests) => {
   return false;
 };
 
-const createTest = (tests, filepath, articles, jestterConf, argv) => {
-  let datas = [];
+const createTest = (tests: Test[], filepath: string, articles: Articles, jestterConf: JestterConf, argv:any) => {
+  let datas: string[] = [];
   tests.forEach(({ title, name, kind, params, range, body }) => {
     vlog([" > test ", title, name, kind, params, range, body], argv);
     let data = "";
 
     // set title
     data += replaceTo(articles.test, range + " " + title, "title");
-
 
     // set variable 
     const declaration = createDeclaration(params, body);
@@ -104,7 +114,7 @@ const createTest = (tests, filepath, articles, jestterConf, argv) => {
   return datas.join("\n");
 };
 
-const returnExpect = (kind, name, params, body, jestterConf) => {
+const returnExpect = (kind: string, name: string, params:string[], body:any, jestterConf: JestterConf) => {
   if(jestterConf.kind == "REACT"){
     let expect = returnOriginalExpect(jestterConf.kind);
     return replaceTo(expect, name, "function");
@@ -121,7 +131,7 @@ const returnExpect = (kind, name, params, body, jestterConf) => {
   }
 }
 
-const returnClassExpects = (name, params, body) => {
+const returnClassExpects = (name: string, params:string[], body:any) => {
   const instance = "_" + name;
   const _class = `const ${instance} = new ${name}(${params.join(",")});`;
   let expects = [_class];
@@ -137,7 +147,7 @@ const returnClassExpects = (name, params, body) => {
   return expects;
 }
 
-const returnOriginalExpect = (kind) => {
+const returnOriginalExpect = (kind: string) => {
   if(kind == "REACT"){
     return 'const { getByText } = render(<${function} />);\n\
   const obj = getByText(/Great Test/);\n\
@@ -151,7 +161,7 @@ const returnOriginalExpect = (kind) => {
 /*
  * create argument and result
  */
-const createDeclaration = (params, body) => {
+const createDeclaration = (params:string[], body:any) => {
   let declaration = "";
   if (params) {
     params.forEach((p) => {
@@ -179,7 +189,7 @@ const createDeclaration = (params, body) => {
   return declaration;
 }
 
-const createExpectation = (params) => {
+const createExpectation = (params: string[]) => {
   if (params){
     return params.join(",");
   }else{
@@ -187,39 +197,39 @@ const createExpectation = (params) => {
   }
 }
 
-const createRewireapi = (range,name, filepath) => {
+const createRewireapi = (range: string, name: string, filepath: string) => {
   if (range != "local") return "";
   return "const " + name + " = " + getBasename(filepath) + "RewireAPI.__get__('" + name + "')";
 }
 
 
 const createImport = (
-  { defaultname, names, filepath },
-  localBoolean,
-  jestterConf,
-  argv
+  importset: Importset,
+  localBoolean: boolean,
+  jestterConf: JestterConf,
+  argv: any
 ) => {
-  vlog(["createImport:", defaultname, names, filepath, localBoolean], argv);
+  vlog(["createImport:", importset.defaultname, importset.names, importset.filepath, localBoolean], argv);
   let data = "";
-  if (defaultname || names.length > 0) {
+  if (importset.defaultname != "" || importset.names.length > 0) {
     data += "import ";
     //export default
-    data += defaultname ? defaultname : "";
+    data += importset.defaultname;
 
     //export and local
     if (localBoolean) {
-      const basename = getBasename(filepath);
-      names.push("__RewireAPI__ as " + basename + "RewireAPI");
+      const basename = getBasename(importset.filepath);
+      importset.names.push("__RewireAPI__ as " + basename + "RewireAPI");
     }
-    if (defaultname && names.length > 0) data += " ,";
-    if (names.length > 0) {
-      data += "{" + names.join(",") + "}";
+    if (importset.defaultname != ""  && importset.names.length > 0) data += " ,";
+    if (importset.names.length > 0) {
+      data += "{" + importset.names.join(",") + "}";
     }
 
     if (jestterConf.testdir) {
-      data += " from '." + filepath + "';";
+      data += " from '." + importset.filepath + "';";
     } else {
-      data += " from '" + filepath + "';";
+      data += " from '" + importset.filepath + "';";
     }
   }
   vlog(" > import '" + data + "'", argv);
@@ -229,7 +239,7 @@ const createImport = (
 /*
  * example './aaa/foo.js' -> 'foo'
  */
-function getBasename(filepath) {
+function getBasename(filepath: string) {
   return path.basename(filepath, path.extname(filepath));
 }
 
@@ -237,7 +247,7 @@ function getBasename(filepath) {
  * replace arg, argstr
  * argstr:${functionName}, ${title}, ${argument}, ${declaration}
  */
-const replaceTo = (str, arg, argstr) => {
+const replaceTo = (str: string, arg: string, argstr: string) => {
   const searchstr = "${" + argstr + "}";
   return str.replace(searchstr, arg);
 };
@@ -246,33 +256,38 @@ const replaceTo = (str, arg, argstr) => {
  * make Articles
  * file read './data/[datas].dat'
  */
-function setupArticles(__programroot, jestterConf) {
-  let articles = {};
-  const datas = ["prepared", "test"];
-  datas.forEach((key) => {
-    try {
-      let key2;
-      if(key == "prepared"){
-        key2 = key + "_" + jestterConf.kind.toUpperCase();
-      }else{
-        key2 = key;
-      }
-      const fpath = path.join(__programroot, "data", key2 + ".dat");
-      const data = fs.readFileSync(fpath, "utf-8");
-      articles[key] = data;
-    } catch (e) {
-      console.error(e.message);
-    }
-  });
+function setupArticles(__programroot: string, jestterConf: JestterConf) {
+  let articles:Articles = {
+    prepared: readArticlesData("prepared", jestterConf, __programroot),
+    test: readArticlesData("test", jestterConf, __programroot)
+  };
+
   return articles;
+}
+
+function readArticlesData(article: string, jestterConf: JestterConf, __programroot: string){
+  try {
+    let key2;
+    if(article == "prepared"){
+      key2 = article + "_" + jestterConf.kind.toUpperCase();
+    }else{
+      key2 = article;
+    }
+    const fpath = path.join(__programroot, "data", key2 + ".dat");
+    const data = fs.readFileSync(fpath, "utf-8");
+    return data;
+  } catch (e:any) {
+    console.error(e.message);
+    return ""
+  }
 }
 
 /**
  * read jestter.json
  * assign to jestterConf
  */
-function setupJestter(__programroot, argv) {
-  let jestterConf = {
+function setupJestter(__programroot: string, argv: any) {
+  let jestterConf:JestterConf = {
     kind: "JS",
     testdir: "__tests__",
   };
@@ -297,7 +312,7 @@ function setupJestter(__programroot, argv) {
   return jestterConf;
 }
 
-const vlog = (msg, argv) => {
+const vlog = (msg: any, argv: any) => {
   let bool;
   try {
     bool = argv.V;

@@ -13,7 +13,11 @@ export default function run() {
   const __programroot = path.dirname(path.normalize(__filename + "/../../"));
 
   const argv = args(__programroot);
-  const filepath = argv._[0];
+  const filepath: string | number = argv._[0];
+
+  if (typeof filepath === "number"){
+    throw new Error('The mistake is found in argument.')
+  }
 
   const jsList = [".js",".mjs",".cjs",".ts",".mts",".cts"];
   if(!jsList.includes(path.extname(filepath))){
