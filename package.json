@@ -1,6 +1,6 @@
 {
   "name": "jestter",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "STUB FIRST DEVELOPMENT. Jestter is intended to aid Test for Jest.",
   "main": "bin/jestter/index.js",
   "bin": {
