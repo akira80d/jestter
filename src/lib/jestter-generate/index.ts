@@ -3,13 +3,14 @@
 import fs from "fs";
 import path from "path";
 import { parse } from "@babel/parser";
+import {Test,Testdata,Collections,ClassMethods} from "./types";
 
 /*
  * collect exportdefualt and functions for generate test
  */
 
-export default function generate(filepath, argv) {
-  let COLLECTIONS = {
+export default function generate(filepath: string, argv: any) {
+  let collections:Collections = {
     exportdefault: undefined,
     functions: [],
     classes: [],
@@ -37,7 +38,7 @@ export default function generate(filepath, argv) {
     const code = fs.readFileSync(filepath, "utf-8");
     const ast = parse(code, {
       sourceType: "module",
-      plugins: ["es2015", "jsx", "react"],
+      plugins: ["jsx", "typescript"],
     });
 
     let ancestors = "ROOT";
@@ -48,18 +49,18 @@ export default function generate(filepath, argv) {
     return testdata;
   };
 
-  function nodesProcess(nodes, ancestors, argv) {
+  function nodesProcess(nodes: any, ancestors: string, argv: any) {
     for (let i = 0; i < nodes.length; i++) {
       switchTypes(nodes[i], ancestors, argv);
     }
   }
 
-  function switchTypes(node, ancestors, argv) {
+  function switchTypes(node: any, ancestors: string, argv: any) {
     vlog(node.type, argv);
     switch (node.type) {
       case TYPES.ExportDefaultDeclaration:
         ancestors += "," + node.type;
-        COLLECTIONS.exportdefault = returnExportDefaultInCOLLECTIONS(node,argv);
+        collections.exportdefault = returnExportDefaultInCOLLECTIONS(node);
         switchTypes(node.declaration, ancestors, argv);
         break;
       case TYPES.ExportNamedDeclaration:
@@ -74,28 +75,28 @@ export default function generate(filepath, argv) {
         break;
       case TYPES.VariableDeclarator:
         ancestors += "," + node.type;
-        const name = node.id.loc.identifierName;
+        const name:string = node.id.loc.identifierName;
         if (node.init.type == "ArrowFunctionExpression") {
-          let test = makeFunctionTestData(
+          let test:Test = makeFunctionTestData(
             node.init,
             name,
             ancestors,
             node.init.type
           );
-          COLLECTIONS.functions = COLLECTIONS.functions.concat(test);
+          collections.functions = collections.functions.concat(test);
         } else if (node.init.type == "FunctionExpression") {
-          let test = makeFunctionTestData(
+          let test:Test = makeFunctionTestData(
             node.init,
             name,
             ancestors,
             node.init.type
           );
-          COLLECTIONS.functions = COLLECTIONS.functions.concat(test);
+          collections.functions = collections.functions.concat(test);
         } else if (node.init.type == "CallExpression") {
           vlog(["CallExpression:", node.init], argv);
           let test = callExpressionProcess(node.init, name, ancestors, argv);
           vlog(test, argv);
-          COLLECTIONS.functions = COLLECTIONS.functions.concat(test);
+          collections.functions = collections.functions.concat(test);
         } else {
           vlog(["VariableDeclarator->:", node.init.type, node.init], argv);
         }
@@ -104,14 +105,14 @@ export default function generate(filepath, argv) {
         ancestors += "," + node.type;
         const nameid = node.id.name;
         let test = makeFunctionTestData(node, nameid, ancestors, node.type);
-        COLLECTIONS.functions = COLLECTIONS.functions.concat(test);
+        collections.functions = collections.functions.concat(test);
         break;
       case TYPES.ClassDeclaration:
         ancestors += "," + node.type;
         const classname = node.id.name;
         const classMethods = returnClassMethods(node.body.body,argv);
         const classTest = makeClassTestData(classname, ancestors, node.type, classMethods);
-        COLLECTIONS.classes = COLLECTIONS.classes.concat(classTest);
+        collections.classes = collections.classes.concat(classTest);
         break;
       case TYPES.ExpressionStatement:
         break;
@@ -124,8 +125,8 @@ export default function generate(filepath, argv) {
   /*
    * return class methods and args
    */
-  function returnClassMethods(nodes, argv){
-    let classMethods = {constructor: {}, methods:[]};
+  function returnClassMethods(nodes: any, argv: any){
+    let classMethods:ClassMethods = {constructor: {}, methods:[]};
     //vlog(["ClassDeclaration->body->body:", nodes], argv);
     for(let i = 0; i < nodes.length; i++){
       let node = nodes[i];
@@ -147,14 +148,13 @@ export default function generate(filepath, argv) {
    * suppor)t
    * callExpression -> FunctionExpression
    */
-  function callExpressionProcess(node, name, ancestors, argv) {
+  function callExpressionProcess(node: any, name: string, ancestors: string, argv: any):Test {
     const paramslist = returnParamsNameList(node.callee.params);
     const kind = node.type + "->" + node.callee.type;
     return makeFunctionTestData(node.callee, name, ancestors, kind);
   }
 
-  function returnExportDefaultInCOLLECTIONS(node,argv) {
-    //vlog(["DefaultDeclaration->", node], argv);
+  function returnExportDefaultInCOLLECTIONS(node: any) {
     if (node.declaration.type == TYPES.Identifier) {
       return [TYPES.ExportDefaultDeclaration, node.declaration.name];
     } else if (node.declaration.type == TYPES.FunctionDeclaration) {
@@ -165,26 +165,32 @@ export default function generate(filepath, argv) {
     return undefined;
   }
 
-  function makeFunctionTestData(node, name, ancestors, kind) {
-    return {
+
+  function makeFunctionTestData(node: any, name: string, ancestors: string, kind: string) {
+    let test: Test = {
       ancestors: ancestors,
       title: name + " Test ....",
       name,
       kind,
       params: returnParamsNameList(node.params),
+      range:"",
       body: [],
     };
+    return test;
   }
 
-  function makeClassTestData(name, ancestors, kind, classMethods) {
-    return {
+  function makeClassTestData(name: string, ancestors: string, kind: string, classMethods: ClassMethods) {
+    let params = classMethods.constructor.params;
+    let test: Test = {
       ancestors,
       title: name + " Test ....",
       name,
       kind,
-      params: classMethods.constructor.params,
+      params: params ? params : [""],
+      range: "",
       body: classMethods.methods,
     };
+    return test;
   }
 
   /*
@@ -194,8 +200,8 @@ export default function generate(filepath, argv) {
    * support)
    * (...arg, arg = "default")
    */
-  function returnParamsNameList(params) {
-    const paramslist = params.map((p) => {
+  function returnParamsNameList(params: any) {
+    const paramslist = params.map((p:any) => {
       if (p.type == TYPES.Identifier) {
         return p.name;
       } else if (p.type == TYPES.RestElement) {
@@ -212,11 +218,11 @@ export default function generate(filepath, argv) {
     return paramslist;
   }
 
-  function makeTestData(filepath) {
-    const defaultname = COLLECTIONS.exportdefault
-      ? COLLECTIONS.exportdefault[1]
-      : undefined;
-    let testdata = {
+  function makeTestData(filepath: string) {
+    const defaultname = collections.exportdefault
+      ? collections.exportdefault[1]
+      : "";
+    let testdata: Testdata = {
       filepath: filepath,
       importset: {
         defaultname: defaultname,
@@ -235,7 +241,7 @@ export default function generate(filepath, argv) {
 
     // wrning no exportdefualt & export
     if (
-      testdata.importset.defaultname == undefined &&
+      testdata.importset.defaultname == "" &&
       testdata.importset.names.length == 0
     ) {
       console.error("Can not TEST only local function");
@@ -244,20 +250,20 @@ export default function generate(filepath, argv) {
     return testdata;
   }
 
-  function makeTests(testdata, type){
+  function makeTests(testdata: Testdata, type: string){
     let objs = undefined;
     if (type == "functions"){
-      objs = COLLECTIONS.functions;
+      objs = collections.functions;
     }else {
-      objs = COLLECTIONS.classes;
+      objs = collections.classes;
     }
       
     for (let i = 0; i < objs.length; i++) {
       let obj = objs[i];
       let range = "local";
       if (
-        COLLECTIONS.exportdefault != undefined &&
-        obj.name == COLLECTIONS.exportdefault[1]
+        collections.exportdefault != undefined &&
+        obj.name == collections.exportdefault[1]
       ) {
         range = "exportdefault";
       } else if (obj.ancestors.match(/ExportNamedDeclaration/)) {
@@ -265,20 +271,23 @@ export default function generate(filepath, argv) {
         testdata.importset.names = testdata.importset.names.concat(obj.name);
       }
 
-      testdata.tests = testdata.tests.concat({
+      let test: Test = {
+        ancestors: obj.ancestors,
         title: obj.title,
         name: obj.name,
         kind: obj.kind,
         params: obj.params,
         range: range,
         body: obj.body,
-      });
+      }
+
+      testdata.tests = testdata.tests.concat(test);
     }
 
     return testdata;
   }
 
-  const vlog = (msg, argv) => {
+  const vlog = (msg: any, argv: any) => {
     let bool;
     try {
       bool = argv.V;
