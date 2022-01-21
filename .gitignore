@@ -4,5 +4,5 @@
 node_modules
 note
 testdata/__tests__/*.test.js
-lib/
+./lib/
 .vscode/
