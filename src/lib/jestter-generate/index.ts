@@ -10,7 +10,7 @@ import {Test,Testdata,Collections,ClassMethods} from "./types";
  */
 
 export default function generate(filepath: string, argv: any) {
-  let collections:Collections = {
+  const collections:Collections = {
     exportdefault: undefined,
     functions: [],
     classes: [],
@@ -41,10 +41,10 @@ export default function generate(filepath: string, argv: any) {
       plugins: ["jsx", "typescript"],
     });
 
-    let ancestors = "ROOT";
+    const ancestors = "ROOT";
     nodesProcess(ast.program.body, ancestors, argv);
 
-    let testdata = makeTestData(filepath);
+    const testdata = makeTestData(filepath);
     vlog(["testdata:", testdata, testdata.tests], argv);
     return testdata;
   };
@@ -58,26 +58,29 @@ export default function generate(filepath: string, argv: any) {
   function switchTypes(node: any, ancestors: string, argv: any) {
     vlog(node.type, argv);
     switch (node.type) {
-      case TYPES.ExportDefaultDeclaration:
+      case TYPES.ExportDefaultDeclaration: {
         ancestors += "," + node.type;
         collections.exportdefault = returnExportDefaultInCOLLECTIONS(node);
         switchTypes(node.declaration, ancestors, argv);
         break;
-      case TYPES.ExportNamedDeclaration:
+      }
+      case TYPES.ExportNamedDeclaration: {
         ancestors += "," + node.type;
         switchTypes(node.declaration, ancestors, argv);
         break;
+      }
       case TYPES.ImportDeclaration:
         break;
-      case TYPES.VariableDeclaration:
+      case TYPES.VariableDeclaration: {
         ancestors += "," + node.type;
         nodesProcess(node.declarations, ancestors, argv);
         break;
-      case TYPES.VariableDeclarator:
+      }
+      case TYPES.VariableDeclarator: {
         ancestors += "," + node.type;
         const name:string = node.id.loc.identifierName;
         if (node.init.type == "ArrowFunctionExpression") {
-          let test:Test = makeFunctionTestData(
+          const test:Test = makeFunctionTestData(
             node.init,
             name,
             ancestors,
@@ -85,7 +88,7 @@ export default function generate(filepath: string, argv: any) {
           );
           collections.functions = collections.functions.concat(test);
         } else if (node.init.type == "FunctionExpression") {
-          let test:Test = makeFunctionTestData(
+          const test:Test = makeFunctionTestData(
             node.init,
             name,
             ancestors,
@@ -94,26 +97,29 @@ export default function generate(filepath: string, argv: any) {
           collections.functions = collections.functions.concat(test);
         } else if (node.init.type == "CallExpression") {
           vlog(["CallExpression:", node.init], argv);
-          let test = callExpressionProcess(node.init, name, ancestors, argv);
+          const test = callExpressionProcess(node.init, name, ancestors);
           vlog(test, argv);
           collections.functions = collections.functions.concat(test);
         } else {
           vlog(["VariableDeclarator->:", node.init.type, node.init], argv);
         }
         break;
-      case TYPES.FunctionDeclaration:
+      }
+      case TYPES.FunctionDeclaration: {
         ancestors += "," + node.type;
         const nameid = node.id.name;
-        let test = makeFunctionTestData(node, nameid, ancestors, node.type);
+        const test = makeFunctionTestData(node, nameid, ancestors, node.type);
         collections.functions = collections.functions.concat(test);
         break;
-      case TYPES.ClassDeclaration:
+      }
+      case TYPES.ClassDeclaration: {
         ancestors += "," + node.type;
         const classname = node.id.name;
         const classMethods = returnClassMethods(node.body.body,argv);
         const classTest = makeClassTestData(classname, ancestors, node.type, classMethods);
         collections.classes = collections.classes.concat(classTest);
-        break;
+        break;       
+      }
       case TYPES.ExpressionStatement:
         break;
       default:
@@ -126,10 +132,9 @@ export default function generate(filepath: string, argv: any) {
    * return class methods and args
    */
   function returnClassMethods(nodes: any, argv: any){
-    let classMethods:ClassMethods = {constructor: {}, methods:[]};
-    //vlog(["ClassDeclaration->body->body:", nodes], argv);
+    const classMethods:ClassMethods = {constructor: {}, methods:[]};
     for(let i = 0; i < nodes.length; i++){
-      let node = nodes[i];
+      const node = nodes[i];
       if (node.type === "ClassMethod"){
         vlog(["ClassMethod:", node], argv);
         const paramsList = returnParamsNameList(node.params);
@@ -140,7 +145,6 @@ export default function generate(filepath: string, argv: any) {
         }
       }
     }
-    //vlog(["classMethods =>", classMethods, classMethods.methods], argv);
     return classMethods;
   }
 
@@ -148,8 +152,7 @@ export default function generate(filepath: string, argv: any) {
    * suppor)t
    * callExpression -> FunctionExpression
    */
-  function callExpressionProcess(node: any, name: string, ancestors: string, argv: any):Test {
-    const paramslist = returnParamsNameList(node.callee.params);
+  function callExpressionProcess(node: any, name: string, ancestors: string):Test {
     const kind = node.type + "->" + node.callee.type;
     return makeFunctionTestData(node.callee, name, ancestors, kind);
   }
@@ -167,7 +170,7 @@ export default function generate(filepath: string, argv: any) {
 
 
   function makeFunctionTestData(node: any, name: string, ancestors: string, kind: string) {
-    let test: Test = {
+    const test: Test = {
       ancestors: ancestors,
       title: name + " Test ....",
       name,
@@ -180,8 +183,8 @@ export default function generate(filepath: string, argv: any) {
   }
 
   function makeClassTestData(name: string, ancestors: string, kind: string, classMethods: ClassMethods) {
-    let params = classMethods.constructor.params;
-    let test: Test = {
+    const params = classMethods.constructor.params;
+    const test: Test = {
       ancestors,
       title: name + " Test ....",
       name,
@@ -211,7 +214,6 @@ export default function generate(filepath: string, argv: any) {
         //arg = "defaultargment"
         return p.left.name;
       } else {
-        console.log(p);
         return "object";
       }
     });
@@ -259,7 +261,7 @@ export default function generate(filepath: string, argv: any) {
     }
       
     for (let i = 0; i < objs.length; i++) {
-      let obj = objs[i];
+      const obj = objs[i];
       let range = "local";
       if (
         collections.exportdefault != undefined &&
@@ -271,7 +273,7 @@ export default function generate(filepath: string, argv: any) {
         testdata.importset.names = testdata.importset.names.concat(obj.name);
       }
 
-      let test: Test = {
+      const test: Test = {
         ancestors: obj.ancestors,
         title: obj.title,
         name: obj.name,

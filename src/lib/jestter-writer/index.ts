@@ -40,7 +40,7 @@ const getTestFilePath = (filepath: string, jestterConf: JestterConf) => {
   let testfilePath = path.join(testdir, basename + ".test" + extname);
   let i = 2;
   while (fs.existsSync(testfilePath)) {
-    testfilePath = path.join(testdir, basename + "_" + i + ".test" + extname);
+    testfilePath = path.join(testdir, basename + "_" + String(i) + ".test" + extname);
     i++;
   }
   return testfilePath;
@@ -69,7 +69,7 @@ const makeSentence = (
     argv
   );
   const testdata = createTest(tests, filepath, articles, jestterConf, argv);
-  const data = [prepared, importdata, , testdata].join("\n");
+  const data = [prepared, importdata, "", testdata].join("\n");
   return data;
 };
 
@@ -79,7 +79,7 @@ const makeSentence = (
  */
 const searchLocalinTests = (tests:Test[]) => {
   for (let i = 0; i < tests.length; i++) {
-    let test = tests[i];
+    const test = tests[i];
     if (test.range == "local") {
       return true;
       break;
@@ -116,7 +116,7 @@ const createTest = (tests: Test[], filepath: string, articles: Articles, jestter
 
 const returnExpect = (kind: string, name: string, params:string[], body:any, jestterConf: JestterConf) => {
   if(jestterConf.kind == "REACT"){
-    let expect = returnOriginalExpect(jestterConf.kind);
+    const expect = returnOriginalExpect(jestterConf.kind);
     return replaceTo(expect, name, "function");
   }
   if(kind == "ClassDeclaration"){
@@ -136,8 +136,8 @@ const returnClassExpects = (name: string, params:string[], body:any) => {
   const _class = `const ${instance} = new ${name}(${params.join(",")});`;
   let expects = [_class];
   for(let i = 0; i < body.length; i++){
-    let method = body[i];
-    let testFunc = "toBe";
+    const method = body[i];
+    const testFunc = "toBe";
     if (method.static == true){
       expects = expects.concat(`  expect(${name}.${method.name}(${method.params.join(",")})).${testFunc}(result${i+1});`);
     }else{
@@ -170,7 +170,7 @@ const createDeclaration = (params:string[], body:any) => {
   }
   if (body){
     for(let i = 0; i < body.length; i++){
-      let method = body[i];
+      const method = body[i];
       for(let l = 0; l < method.params.length; l++){
         declaration += `  const ${method.params[l]} = undefined;`;
         if(l != method.params.length) declaration += "\n";
@@ -232,7 +232,6 @@ const createImport = (
       data += " from '" + importset.filepath + "';";
     }
   }
-  vlog(" > import '" + data + "'", argv);
   return data;
 };
 
@@ -257,7 +256,7 @@ const replaceTo = (str: string, arg: string, argstr: string) => {
  * file read './data/[datas].dat'
  */
 function setupArticles(__programroot: string, jestterConf: JestterConf) {
-  let articles:Articles = {
+  const articles:Articles = {
     prepared: readArticlesData("prepared", jestterConf, __programroot),
     test: readArticlesData("test", jestterConf, __programroot)
   };
