@@ -12,3 +12,5 @@ const map: MyMap = (array, f) => {
 
 console.log(map([1,2,3,4,5,6,7], _ => _*2))
 console.log(map(["a","bb","ccc","dddddd"], _ => _.length))
+
+export default map
