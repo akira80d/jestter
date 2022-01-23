@@ -3,5 +3,12 @@
 node_modules
 package.json
 package-lock.json
-
-
+tsconfig.json
+tsconfig.eslint.json
+README.md
+babel.config.json
+.npmignore
+.gitignore
+.eslintrc.js
+lib
+bin

@@ -30,18 +30,21 @@
   ],
   "devDependencies": {
     "@types/jest": "^27.4.0",
+    "@typescript-eslint/eslint-plugin": "^5.10.0",
+    "@typescript-eslint/parser": "^5.10.0",
     "babel-plugin-rewire": "^1.2.0",
+    "eslint": "^8.7.0",
+    "eslint-config-prettier": "^8.3.0",
     "jest": "^27.4.5",
     "prettier": "2.5.1",
     "typescript": "^4.5.4",
     "watch": "^0.13.0"
   },
   "scripts": {
-    "build": "npm run cp:lib",
+    "build": "npm run tsc",
     "prepublishOnly": "npm run build",
     "jestter": "node ./bin/jestter/index.js",
-    "watch": "npm run watch:lib",
-    "watch:lib": "watch 'npm run tsc' src/lib/",
+    "watch": "watch 'npm run tsc' src/lib/",
     "tsc": "npx tsc",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },

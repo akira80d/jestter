@@ -7,7 +7,6 @@ import * as writer from "../jestter-writer/index.js";
 import * as generate from "../jestter-generate/index.js";
 import args from "../jestter-cli/index.js";
 
-
 export default function run() {
   const __filename = fileURLToPath(import.meta.url);
   const __programroot = path.dirname(path.normalize(__filename + "/../../"));
