@@ -1,5 +1,5 @@
 # Jestter
-STUB FIRST DEVELOPMENT. Jestter scaffold Jest Test File from your stub.
+STUB FIRST DEVELOPMENT. Jestter is intended to aid Test for Jest.
 
 # Getting Started
 install Jestter using npm:
