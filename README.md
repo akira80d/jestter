@@ -120,7 +120,7 @@ test('exportdefault MyClass Test ....', () => {
 
 # example React
 ```bash
-npx jestter ./src/App.js **--kind REACT**
+npx jestter ./src/App.js --kind REACT
 ```
 **JavaScript** ./src/App.js
 ```bash
